@@ -1,9 +1,14 @@
-Template 4: Sample Alert Payloads & Test Data
+# Template 4: Sample Alert Payloads & Test Data
+
 Complete set of sample alert payloads, curl commands, and mock data for testing the incident platform.
 
-Sample Alert Payloads
-1. High Severity - Production API Alert
-json
+---
+
+## Sample Alert Payloads
+
+### 1. High Severity - Production API Alert
+
+```json
 {
   "service": "frontend-api",
   "severity": "high",
@@ -16,9 +21,11 @@ json
   },
   "timestamp": "2026-02-09T10:30:00Z"
 }
-curl command:
+```
 
-bash
+**curl command:**
+
+```bash
 curl -X POST http://localhost:8001/api/v1/alerts \
   -H "Content-Type: application/json" \
   -d '{
@@ -32,8 +39,11 @@ curl -X POST http://localhost:8001/api/v1/alerts \
       "error_rate": "15.3%"
     }
   }'
-2. Critical Severity - Database Connection Failure
-json
+```
+
+### 2. Critical Severity - Database Connection Failure
+
+```json
 {
   "service": "postgres-primary",
   "severity": "critical",
@@ -47,9 +57,11 @@ json
   },
   "timestamp": "2026-02-09T10:35:00Z"
 }
-curl command:
+```
 
-bash
+**curl command:**
+
+```bash
 curl -X POST http://localhost:8001/api/v1/alerts \
   -H "Content-Type: application/json" \
   -d '{
@@ -62,8 +74,11 @@ curl -X POST http://localhost:8001/api/v1/alerts \
       "instance": "postgres-primary-01"
     }
   }'
-3. Medium Severity - High CPU Usage
-json
+```
+
+### 3. Medium Severity - High CPU Usage
+
+```json
 {
   "service": "backend-worker",
   "severity": "medium",
@@ -77,9 +92,11 @@ json
   },
   "timestamp": "2026-02-09T10:40:00Z"
 }
-curl command:
+```
 
-bash
+**curl command:**
+
+```bash
 curl -X POST http://localhost:8001/api/v1/alerts \
   -H "Content-Type: application/json" \
   -d '{
@@ -92,8 +109,11 @@ curl -X POST http://localhost:8001/api/v1/alerts \
       "cpu_usage": "85.2%"
     }
   }'
-4. Low Severity - Disk Space Warning
-json
+```
+
+### 4. Low Severity - Disk Space Warning
+
+```json
 {
   "service": "log-storage",
   "severity": "low",
@@ -107,9 +127,11 @@ json
   },
   "timestamp": "2026-02-09T10:45:00Z"
 }
-curl command:
+```
 
-bash
+**curl command:**
+
+```bash
 curl -X POST http://localhost:8001/api/v1/alerts \
   -H "Content-Type: application/json" \
   -d '{
@@ -122,8 +144,11 @@ curl -X POST http://localhost:8001/api/v1/alerts \
       "disk_usage": "75%"
     }
   }'
-5. High Severity - Memory Leak Detected
-json
+```
+
+### 5. High Severity - Memory Leak Detected
+
+```json
 {
   "service": "cache-service",
   "severity": "high",
@@ -137,9 +162,11 @@ json
   },
   "timestamp": "2026-02-09T10:50:00Z"
 }
-curl command:
+```
 
-bash
+**curl command:**
+
+```bash
 curl -X POST http://localhost:8001/api/v1/alerts \
   -H "Content-Type: application/json" \
   -d '{
@@ -151,17 +178,23 @@ curl -X POST http://localhost:8001/api/v1/alerts \
       "memory_usage": "92%"
     }
   }'
-Alert Storm Simulation
-Simulate alert storm (multiple related alerts for correlation testing):
+```
 
-Script: simulate-alert-storm.sh
-bash
+---
+
+## Alert Storm Simulation
+
+Simulate alert storm (multiple related alerts for correlation testing).
+
+**Script:** `simulate-alert-storm.sh`
+
+```bash
 #!/bin/bash
 
 SERVICE="frontend-api"
 BASE_URL="http://localhost:8001/api/v1/alerts"
 
-echo "🚨 Simulating alert storm for service: $SERVICE"
+echo "Simulating alert storm for service: $SERVICE"
 
 for i in {1..5}; do
   echo "Sending alert $i/5..."
@@ -183,15 +216,23 @@ for i in {1..5}; do
   sleep 2
 done
 
-echo "✅ Alert storm simulation complete"
-Run:
+echo "Alert storm simulation complete"
+```
 
-bash
+**Run:**
+
+```bash
 chmod +x simulate-alert-storm.sh
 ./simulate-alert-storm.sh
-Mock On-Call Schedule Data
-Sample On-Call Schedules (SQL Insert)
-sql
+```
+
+---
+
+## Mock On-Call Schedule Data
+
+### Sample On-Call Schedules (SQL Insert)
+
+```sql
 -- Insert sample on-call schedules for Platform Engineering team
 
 -- Week 1: Alice (Primary), Bob (Secondary)
@@ -223,8 +264,11 @@ INSERT INTO oncall_schedules (team, engineer, start_date, end_date, rotation_typ
 VALUES 
   ('backend-team', 'frank@company.com', '2026-02-09', '2026-02-15', 'weekly', true),
   ('backend-team', 'grace@company.com', '2026-02-09', '2026-02-15', 'weekly', false);
-JSON Format (API)
-json
+```
+
+### JSON Format (API)
+
+```json
 {
   "schedules": [
     {
@@ -281,9 +325,15 @@ json
     }
   ]
 }
-Comprehensive Test Script
-test-platform.sh
-bash
+```
+
+---
+
+## Comprehensive Test Script
+
+**Script:** `test-platform.sh`
+
+```bash
 #!/bin/bash
 
 # Colors for output
@@ -294,7 +344,7 @@ NC='\033[0m' # No Color
 
 BASE_URL="http://localhost"
 
-echo "🧪 Testing Incident Platform..."
+echo "Testing Incident Platform..."
 echo "================================"
 
 # Test 1: Health checks
@@ -302,11 +352,11 @@ echo ""
 echo "${YELLOW}Test 1: Health Checks${NC}"
 services=("8001" "8002" "8003" "8004" "8080")
 for port in "${services[@]}"; do
-  response=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL:$port/health)
+  response=$(curl -s -o /dev/null -w "%%{http_code}" $BASE_URL:$port/health)
   if [ "$response" -eq 200 ]; then
-    echo "${GREEN}✓${NC} Service on port $port is healthy"
+    echo "${GREEN}[PASS]${NC} Service on port $port is healthy"
   else
-    echo "${RED}✗${NC} Service on port $port failed (HTTP $response)"
+    echo "${RED}[FAIL]${NC} Service on port $port failed (HTTP $response)"
   fi
 done
 
@@ -321,12 +371,12 @@ response=$(curl -s -X POST $BASE_URL:8001/api/v1/alerts \
     "service": "test-service",
     "severity": "high",
     "message": "Test high severity alert"
-  }' -w "%{http_code}")
+  }' -w "%%{http_code}")
 
 if [[ "$response" == *"201"* ]]; then
-  echo "${GREEN}✓${NC} High severity alert created"
+  echo "${GREEN}[PASS]${NC} High severity alert created"
 else
-  echo "${RED}✗${NC} Failed to create alert"
+  echo "${RED}[FAIL]${NC} Failed to create alert"
 fi
 
 # Test 3: Check Prometheus metrics
@@ -335,21 +385,21 @@ echo "${YELLOW}Test 3: Prometheus Metrics${NC}"
 
 response=$(curl -s $BASE_URL:8001/metrics | grep -c "alerts_received_total")
 if [ "$response" -gt 0 ]; then
-  echo "${GREEN}✓${NC} Prometheus metrics available"
+  echo "${GREEN}[PASS]${NC} Prometheus metrics available"
 else
-  echo "${RED}✗${NC} Prometheus metrics not found"
+  echo "${RED}[FAIL]${NC} Prometheus metrics not found"
 fi
 
 # Test 4: Check Grafana
 echo ""
 echo "${YELLOW}Test 4: Grafana Dashboard${NC}"
 
-response=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL:3000/api/health)
+response=$(curl -s -o /dev/null -w "%%{http_code}" $BASE_URL:3000/api/health)
 if [ "$response" -eq 200 ]; then
-  echo "${GREEN}✓${NC} Grafana is accessible"
+  echo "${GREEN}[PASS]${NC} Grafana is accessible"
   echo "   Open: http://localhost:3000 (admin/admin)"
 else
-  echo "${RED}✗${NC} Grafana is not accessible"
+  echo "${RED}[FAIL]${NC} Grafana is not accessible"
 fi
 
 # Test 5: Check Prometheus targets
@@ -357,18 +407,25 @@ echo ""
 echo "${YELLOW}Test 5: Prometheus Targets${NC}"
 
 response=$(curl -s $BASE_URL:9090/api/v1/targets | grep -o '"health":"up"' | wc -l)
-echo "${GREEN}✓${NC} Prometheus has $response healthy targets"
+echo "${GREEN}[INFO]${NC} Prometheus has $response healthy targets"
 
 echo ""
 echo "================================"
 echo "Test suite completed!"
-Run:
+```
 
-bash
+**Run:**
+
+```bash
 chmod +x test-platform.sh
 ./test-platform.sh
-Sample Incident Data (SQL)
-sql
+```
+
+---
+
+## Sample Incident Data (SQL)
+
+```sql
 -- Insert sample incidents for testing
 
 -- Incident 1: Resolved
@@ -412,9 +469,15 @@ VALUES (
   'carol@company.com',
   '2026-02-09 10:50:00'
 );
-Prometheus Alert Examples
-Sample alerts for testing AlertManager (optional)
-text
+```
+
+---
+
+## Prometheus Alert Examples
+
+Sample alerts for testing AlertManager (optional).
+
+```text
 # Example Prometheus alert that would trigger your platform
 
 groups:
@@ -440,47 +503,78 @@ groups:
         annotations:
           summary: "Service {{ $labels.job }} is down"
           message: "{{ $labels.job }} has been down for more than 1 minute"
-Quick Commands Reference
-Start Platform
-bash
+```
+
+---
+
+## Quick Commands Reference
+
+### Start Platform
+
+```bash
 docker compose up -d
-Send Single Alert
-bash
+```
+
+### Send Single Alert
+
+```bash
 curl -X POST http://localhost:8001/api/v1/alerts \
   -H "Content-Type: application/json" \
   -d '{"service":"test","severity":"high","message":"Test"}'
-Check Alert Metrics
-bash
+```
+
+### Check Alert Metrics
+
+```bash
 curl http://localhost:8001/metrics | grep alerts_received
-View All Incidents
-bash
+```
+
+### View All Incidents
+
+```bash
 curl http://localhost:8002/api/v1/incidents
-Get Current On-Call
-bash
+```
+
+### Get Current On-Call
+
+```bash
 curl http://localhost:8003/api/v1/oncall/current?team=platform-engineering
-Check Prometheus Targets
-bash
+```
+
+### Check Prometheus Targets
+
+```bash
 curl http://localhost:9090/api/v1/targets | jq
-Access Services
-Web UI: http://localhost:8080
+```
 
-Grafana: http://localhost:3000 (admin/admin)
+---
 
-Prometheus: http://localhost:9090
+## Access Services
 
-Alert API: http://localhost:8001
+- **Web UI:** http://localhost:8080
+- **Grafana:** http://localhost:3000 (admin/admin)
+- **Prometheus:** http://localhost:9090
+- **Alert API:** http://localhost:8001
+- **Incident API:** http://localhost:8002
+- **On-Call API:** http://localhost:8003
 
-Incident API: http://localhost:8002
+---
 
-On-Call API: http://localhost:8003
+## Performance Testing
 
-Performance Testing
-Load test script (requires wrk or ab)
-bash
+Load test script (requires `wrk` or `ab`).
+
+```bash
 # Using Apache Bench (ab)
 ab -n 1000 -c 10 -p alert.json -T application/json \
   http://localhost:8001/api/v1/alerts
 
 # alert.json content:
 # {"service":"load-test","severity":"medium","message":"Load test alert"}
-These templates and test data save 1-2 hours of creating sample payloads and test scripts!
+```
+
+---
+
+## Summary
+
+These templates and test data save **1-2 hours** of creating sample payloads and test scripts!

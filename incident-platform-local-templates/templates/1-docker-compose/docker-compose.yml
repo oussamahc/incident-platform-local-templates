@@ -1,0 +1,172 @@
+version: '3.8'
+
+services:
+  # Database
+  database:
+    image: postgres:15-alpine
+    container_name: incident-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-incident_platform}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hackathon2026}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - incident-platform
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Alert Ingestion Service
+  alert-ingestion:
+    build:
+      context: ./services/alert-ingestion
+      dockerfile: Dockerfile
+    container_name: alert-ingestion
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:hackathon2026@database:5432/incident_platform
+      - SERVICE_PORT=8001
+    networks:
+      - incident-platform
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Incident Management Service
+  incident-management:
+    build:
+      context: ./services/incident-management
+      dockerfile: Dockerfile
+    container_name: incident-management
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:hackathon2026@database:5432/incident_platform
+      - SERVICE_PORT=8002
+      - ONCALL_SERVICE_URL=http://oncall-service:8003
+    networks:
+      - incident-platform
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # On-Call & Escalation Service
+  oncall-service:
+    build:
+      context: ./services/oncall-service
+      dockerfile: Dockerfile
+    container_name: oncall-service
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=postgresql://postgres:hackathon2026@database:5432/incident_platform
+      - SERVICE_PORT=8003
+    networks:
+      - incident-platform
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Web UI / API Gateway
+  web-ui:
+    build:
+      context: ./services/web-ui
+      dockerfile: Dockerfile
+    container_name: web-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - ALERT_SERVICE_URL=http://alert-ingestion:8001
+      - INCIDENT_SERVICE_URL=http://incident-management:8002
+      - ONCALL_SERVICE_URL=http://oncall-service:8003
+    networks:
+      - incident-platform
+    depends_on:
+      - alert-ingestion
+      - incident-management
+      - oncall-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - incident-platform
+    depends_on:
+      - alert-ingestion
+      - incident-management
+      - oncall-service
+    restart: unless-stopped
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+    networks:
+      - incident-platform
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  db-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  incident-platform:
+    driver: bridge
+    name: incident-platform

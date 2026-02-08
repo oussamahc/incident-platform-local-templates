@@ -38,8 +38,8 @@ This resource package contains everything you need to build your incident manage
 - Named volumes for persistence
 - Docker network setup
 
-⏱️ **Time saved:** 3-4 hours  
-📌 **Use when:** Starting your project from scratch
+**Time saved:** 3-4 hours  
+**Use when:** Starting your project from scratch
 
 ---
 
@@ -55,8 +55,8 @@ This resource package contains everything you need to build your incident manage
 - Unit test setup with Jest
 - ESLint + Prettier configuration
 
-⏱️ **Time saved:** 2-3 hours  
-📌 **Use when:** Building services in Node.js/TypeScript
+**Time saved:** 2-3 hours  
+**Use when:** Building services in Node.js/TypeScript
 
 **Technologies:**
 - Node.js 20
@@ -79,8 +79,8 @@ This resource package contains everything you need to build your incident manage
 - Pydantic models for validation
 - pytest setup with coverage
 
-⏱️ **Time saved:** 2-3 hours  
-📌 **Use when:** Building services in Python
+**Time saved:** 2-3 hours  
+**Use when:** Building services in Python
 
 **Technologies:**
 - Python 3.11
@@ -104,8 +104,8 @@ This resource package contains everything you need to build your incident manage
 - Load testing examples
 - Quick command reference
 
-⏱️ **Time saved:** 1-2 hours  
-📌 **Use when:** Testing your platform, demonstrating features
+**Time saved:** 1-2 hours  
+**Use when:** Testing your platform, demonstrating features
 
 ---
 
@@ -193,7 +193,7 @@ docker-compose.yml
 
 ---
 
-## 🎓 Learning Path
+## Learning Path
 
 ### For Beginners (Never used Docker Compose)
 Read Quick Start Guide - Understand the setup
@@ -357,7 +357,7 @@ While Person 1 sets up infrastructure, others can:
 - Additional dashboards
 - Real integrations
 
-> 💡 **Don't over-engineer!** Better to have 4 services working perfectly than 6 services half-broken.
+> **Note: Don't over-engineer!** Better to have 4 services working perfectly than 6 services half-broken.
 
  Common Pitfalls
 
@@ -393,15 +393,15 @@ Solution: Template 1 includes Prometheus/Grafana pre-configured—just add custo
 
 | Resource | Time to Setup | Complexity | Value for Hackathon |
 |----------|--------------|------------|---------------------|
-| Template 1 (Compose) | 30 min | Medium | ⭐⭐⭐⭐⭐ Essential |
-| Template 2 (Node.js) | 15 min | Low | ⭐⭐⭐⭐⭐ Recommended |
-| Template 3 (Python) | 15 min | Low | ⭐⭐⭐⭐⭐ Recommended |
-| Template 4 (Samples) | 5 min | Very Low | ⭐⭐⭐⭐ Highly Useful |
-| Quick Start Guide | 10 min read | Low | ⭐⭐⭐⭐⭐ Start Here |
-| CI/CD Guide | 30 min | Medium | ⭐⭐⭐⭐ Important |
-| Docker Optimization | 20 min read | Medium | ⭐⭐⭐ Nice to have |
-| Prometheus Guide | 20 min read | Medium | ⭐⭐⭐⭐ Important |
-| Grafana Guide | 20 min read | Low | ⭐⭐⭐⭐ Important |
+| Template 1 (Compose) | 30 min | Medium | Essential (5/5) |
+| Template 2 (Node.js) | 15 min | Low | Recommended (5/5) |
+| Template 3 (Python) | 15 min | Low | Recommended (5/5) |
+| Template 4 (Samples) | 5 min | Very Low | Highly Useful (4/5) |
+| Quick Start Guide | 10 min read | Low | Start Here (5/5) |
+| CI/CD Guide | 30 min | Medium | Important (4/5) |
+| Docker Optimization | 20 min read | Medium | Nice to have (3/5) |
+| Prometheus Guide | 20 min read | Medium | Important (4/5) |
+| Grafana Guide | 20 min read | Low | Important (4/5) |
 
 ---
 
@@ -467,7 +467,7 @@ A: Maximum 1 hour with templates. Focus remaining time on features.
 - [ ] Sent test alert using Template 4 commands
 - [ ] Verified all services healthy
 
-> ✅ **If all checked** - You're ready to compete!
+> **If all checked** - You're ready to compete!
 
 ---
 
@@ -531,16 +531,16 @@ SRE metrics calculation (MTTA, MTTR)
 
 ---
 
-## 🎉 Good Luck!
+## Good Luck!
 
 You have everything you need to build an amazing incident management platform!
 
 **Remember:**
-- ✅ Start with templates
-- 🎯 Focus on core features first
-- 🧪 Test continuously (Template 4)
-- 📝 Document as you go
-- 😴 Sleep at least 3-5 hours
+- Start with templates
+- Focus on core features first
+- Test continuously (Template 4)
+- Document as you go
+- Sleep at least 3-5 hours
 
-> ⏱️ **Total time saved with templates:** 8-12 hours  
-> 💪 **Make it count!**
+> **Total time saved with templates:** 8-12 hours  
+> **Make it count!**

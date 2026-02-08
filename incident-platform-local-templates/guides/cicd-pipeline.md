@@ -1,25 +1,31 @@
-CI/CD Pipeline Setup Guide
+# CI/CD Pipeline Setup Guide
+
 Complete guide to setting up a 4-7 stage CI/CD pipeline for local Docker Compose deployment.
 
-Pipeline Overview
-Minimum Required (4 Stages):
+---
 
-Quality & Testing - Linters, unit tests, coverage
+## Pipeline Overview
 
-Build - Build Docker images
+### Minimum Required (4 Stages):
 
-Deploy - Deploy to local Docker Compose
+1. **Quality & Testing** - Linters, unit tests, coverage
+2. **Build** - Build Docker images
+3. **Deploy** - Deploy to local Docker Compose
+4. **Verify** - Health checks and smoke tests
 
-Verify - Health checks and smoke tests
+### Advanced Optional (7 Stages):
 
-Advanced Optional (7 Stages):
-5. Security Scan - Credential scanning (GitLeaks/TruffleHog)
-6. Container Scan - Vulnerability scanning (Trivy/Grype)
-7. Integration Tests - API tests against running services
+5. **Security Scan** - Credential scanning (GitLeaks/TruffleHog)
+6. **Container Scan** - Vulnerability scanning (Trivy/Grype)
+7. **Integration Tests** - API tests against running services
 
-Option 1: GitHub Actions
-.github/workflows/ci-cd.yml
-text
+---
+
+## Option 1: GitHub Actions
+
+**File:** `.github/workflows/ci-cd.yml`
+
+```text
 name: Incident Platform CI/CD
 
 on:
@@ -113,10 +119,10 @@ jobs:
             dir=$(dirname "$service")
             coverage=$(grep -o 'line-rate="[^"]*"' "$service" | head -1 | cut -d'"' -f2)
             coverage_percent=$(echo "$coverage * 100" | bc)
-            echo "$dir coverage: ${coverage_percent}%"
+            echo "$dir coverage: ${coverage_percent}%%"
             
             if (( $(echo "$coverage_percent < 60" | bc -l) )); then
-              echo " Coverage below 60% threshold"
+              echo "[FAIL] Coverage below 60%% threshold"
               exit 1
             fi
           done
@@ -265,10 +271,10 @@ jobs:
             attempt=0
             
             while [ $attempt -lt $max_attempts ]; do
-              response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/health || echo "000")
+              response=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:$port/health || echo "000")
               
               if [ "$response" -eq 200 ]; then
-                echo "✓ Port $port is healthy"
+                echo "[PASS] Port $port is healthy"
                 break
               fi
               
@@ -278,7 +284,7 @@ jobs:
             done
             
             if [ $attempt -eq $max_attempts ]; then
-              echo " Port $port failed health check"
+              echo "[FAIL] Port $port failed health check"
               exit 1
             fi
           done
@@ -288,20 +294,20 @@ jobs:
           response=$(curl -s http://localhost:9090/api/v1/targets | jq -r '.data.activeTargets[] | .health')
           
           if echo "$response" | grep -q "down"; then
-            echo " Some Prometheus targets are down"
+            echo "[FAIL] Some Prometheus targets are down"
             exit 1
           fi
           
-          echo "✓ All Prometheus targets healthy"
+          echo "[PASS] All Prometheus targets healthy"
 
       - name: Check Grafana
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health)
+          response=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:3000/api/health)
           
           if [ "$response" -eq 200 ]; then
-            echo "✓ Grafana is healthy"
+            echo "[PASS] Grafana is healthy"
           else
-            echo " Grafana health check failed"
+            echo "[FAIL] Grafana health check failed"
             exit 1
           fi
 
@@ -328,11 +334,11 @@ jobs:
           alert_id=$(echo "$response" | jq -r '.alert_id')
           
           if [ -z "$alert_id" ] || [ "$alert_id" = "null" ]; then
-            echo " Failed to create alert"
+            echo "[FAIL] Failed to create alert"
             exit 1
           fi
           
-          echo "✓ Alert created: $alert_id"
+          echo "[PASS] Alert created: $alert_id"
 
       - name: Verify metrics updated
         run: |
@@ -341,11 +347,11 @@ jobs:
           metrics=$(curl -s http://localhost:8001/metrics | grep alerts_received_total)
           
           if [ -z "$metrics" ]; then
-            echo " Metrics not found"
+            echo "[FAIL] Metrics not found"
             exit 1
           fi
           
-          echo "✓ Metrics updated"
+          echo "[PASS] Metrics updated"
 
       - name: Run API tests
         run: |
@@ -381,9 +387,15 @@ jobs:
 
       - name: Stop containers
         run: docker compose down
-Option 2: GitLab CI/CD
-.gitlab-ci.yml
-text
+```
+
+---
+
+## Option 2: GitLab CI/CD
+
+**File:** `.gitlab-ci.yml`
+
+```text
 stages:
   - quality
   - security
@@ -650,19 +662,22 @@ echo "Checking service health..."
 for port in "${services[@]}"; do
   echo -n "Port $port: "
   
-  response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/health)
+  response=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:$port/health)
   
   if [ "$response" -eq 200 ]; then
-    echo " Healthy"
+    echo "[PASS] Healthy"
   else
-    echo " Failed (HTTP $response)"
+    echo "[FAIL] Failed (HTTP $response)"
     exit 1
   fi
 done
 
 echo "All services healthy"
-scripts/integration-tests.sh
-bash
+```
+
+### scripts/integration-tests.sh
+
+```bash
 #!/bin/bash
 
 set -e
@@ -698,29 +713,46 @@ fi
 echo "Metrics updated"
 
 echo "All integration tests passed"
+```
+
 Make executable:
 
-bash
+```bash
 chmod +x scripts/*.sh
-Pipeline Status Badges
-GitHub Actions
+```
+
+---
+
+## Pipeline Status Badges
+
+### GitHub Actions
+
 Add to README.md:
 
-text
+```text
 ![CI/CD Pipeline](https://github.com/yourteam/incident-platform/workflows/Incident%20Platform%20CI/CD/badge.svg)
-GitLab CI
+```
+
+### GitLab CI
+
 Add to README.md:
 
-text
+```text
 ![pipeline status](https://gitlab.com/yourteam/incident-platform/badges/main/pipeline.svg)
 ![coverage report](https://gitlab.com/yourteam/incident-platform/badges/main/coverage.svg)
-Troubleshooting
-Pipeline fails at quality stage
-Issue: Tests fail or coverage too low
+```
 
-Fix:
+---
 
-bash
+## Troubleshooting
+
+### Pipeline fails at quality stage
+
+**Issue:** Tests fail or coverage too low
+
+**Fix:**
+
+```bash
 # Run tests locally first
 cd services/alert-ingestion
 npm test
@@ -729,34 +761,43 @@ npm test
 npm test -- --coverage
 
 # If coverage low, add more tests
-Pipeline fails at security stage
-Issue: Secrets detected in code
+```
 
-Fix:
+### Pipeline fails at security stage
 
-bash
+**Issue:** Secrets detected in code
+
+**Fix:**
+
+```bash
 # Run GitLeaks locally
 docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect --source /repo
 
 # Remove any hardcoded secrets
 # Add to .gitignore
-Pipeline fails at build stage
-Issue: Docker build errors
+```
 
-Fix:
+### Pipeline fails at build stage
 
-bash
+**Issue:** Docker build errors
+
+**Fix:**
+
+```bash
 # Build locally to see full error
 docker compose build --no-cache
 
 # Check Dockerfile syntax
 # Verify paths and dependencies
-Pipeline fails at deploy stage
-Issue: Containers won't start
+```
 
-Fix:
+### Pipeline fails at deploy stage
 
-bash
+**Issue:** Containers won't start
+
+**Fix:**
+
+```bash
 # Check logs
 docker compose logs
 
@@ -765,21 +806,31 @@ docker compose ps
 
 # Restart specific service
 docker compose restart [service-name]
-Best Practices
-Run pipeline locally before pushing
+```
 
-bash
-make pipeline
-Keep tests fast - Target < 2 minutes for unit tests
+---
 
-Use caching - Cache dependencies to speed up builds
+## Best Practices
 
-Parallel execution - Run independent stages in parallel
+1. **Run pipeline locally before pushing**
+   ```bash
+   make pipeline
+   ```
 
-Fail fast - Stop pipeline on first failure
+2. **Keep tests fast** - Target < 2 minutes for unit tests
 
-Collect artifacts - Save logs on failure for debugging
+3. **Use caching** - Cache dependencies to speed up builds
 
-Monitor pipeline health - Track success rate and duration
+4. **Parallel execution** - Run independent stages in parallel
 
-This CI/CD setup saves 3-4 hours of pipeline configuration and provides production-ready automation!
+5. **Fail fast** - Stop pipeline on first failure
+
+6. **Collect artifacts** - Save logs on failure for debugging
+
+7. **Monitor pipeline health** - Track success rate and duration
+
+---
+
+## Summary
+
+This CI/CD setup saves **3-4 hours** of pipeline configuration and provides production-ready automation!
